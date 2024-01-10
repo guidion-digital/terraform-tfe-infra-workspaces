@@ -1,0 +1,1 @@
+A much simpler permissions module intened for "infrastructure" level workspaces (workspaces used to create application workspaces). It creates an IAM user with the permissions given to `var.workspace_policy`.
