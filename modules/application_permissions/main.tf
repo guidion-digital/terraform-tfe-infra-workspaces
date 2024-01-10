@@ -151,6 +151,13 @@ resource "aws_iam_user_policy_attachment" "api_policy2" {
   policy_arn = module.workspace_user_policy.api_type_policy_arn2
 }
 
+resource "aws_iam_user_policy_attachment" "api_policy3" {
+  count = var.api_app != null ? 1 : 0
+
+  user       = aws_iam_user.this.name
+  policy_arn = module.workspace_user_policy.api_type_policy_arn3
+}
+
 resource "aws_iam_user_policy_attachment" "container_policy" {
   count = var.container_app != null ? 1 : 0
 
