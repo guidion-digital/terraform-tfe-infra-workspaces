@@ -31,8 +31,8 @@ For each entry in `var.applications`:
     - Specifying one of `cdn`, `api`, or `container` for `var.applications{}.app_type` (you will also need to set `var.applications{}.domain_account_role` in this case)
   - Be able to pass the application IAM roles to the application (see next point)
 - IAM roles for use with the resources deployed (the application) will be _created_ and/or _accepted_ as arguments:
-  - **Created** if either `application_policy_arns` or `application_policies` is given (see [example "api-app-x"](./examples/application/main.tf)). In this case, a variable called `var.role_arn` will be created in the workspace, containing the ARN of a role with the provided policies. **`service_types` must also be set**
-  - **Accepted** if `application_role_arn_names` is given of existing roles (see [example "api-app-y"](./examples/application/main.tf))
+  - **Created** if either `application_policy_arns` or `application_policies` is given (see [example "api-app-x"](./examples/test_app/main.tf)). In this case, a variable called `var.role_arn` will be created in the workspace, containing the ARN of a role with the provided policies. **`service_types` must also be set**
+  - **Accepted** if `application_role_arn_names` is given of existing roles (see [example "api-app-y"](./examples/test_app/main.tf))
   - All three can be provided, in which case the workspace IAM user will be permitted to pass a concatenation of the passed roles, and the role the module creates
 - A policy with additional permissions for the application will be created based on the values in `var.applications{}.supporting_services`, which gives necessary permissions to supporting resources such as DynamoDB tables, restricted by namespacing based on the application name
 

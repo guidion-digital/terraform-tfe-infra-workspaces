@@ -11,7 +11,7 @@ variables {
 #
 run "application_workspaces" {
   module {
-    source = "./"
+    source = "./examples/test_app"
   }
 
   command = plan
@@ -78,7 +78,7 @@ run "application_workspaces" {
 #
 run "without_existing_user_without_workspace_policy" {
   module {
-    source = "./"
+    source = "./examples/test_app"
   }
 
   command = plan
@@ -99,7 +99,7 @@ run "without_existing_user_without_workspace_policy" {
 
 run "without_existing_user_with_workspace_policy" {
   module {
-    source = "./"
+    source = "./examples/test_app"
   }
 
   command = plan

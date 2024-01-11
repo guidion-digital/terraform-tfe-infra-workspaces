@@ -1,4 +1,4 @@
-The `main.tf` file shows an instance of this module with all possible fields (including optional ones) populated by variable values you can find in [`tests/unit.tftest.hcl`](./tests/unit.tftest.hcl). Therefore, if you are interested in a working value for `var.applications` for example, you should explore that file to see a working value.
+The `main.tf` file shows an instance of this module with all possible fields (including optional ones) populated by variable values you can find in [`tests/unit.tftest.hcl`](../../tests/unit.tftest.hcl). Therefore, if you are interested in a working value for `var.applications` for example, you should explore that file to see a working value.
 
 Below are notes on the different use cases; "applications" and "infrastructure":
 
@@ -8,7 +8,7 @@ Including a value for `var.applications` changes how the workspace is named, tag
 
 ## Defining Applications in `var.applications`
 
-As stated above, to see a full definition of the `var.applications` variable, check the [`tests/unit.tftest.hcl`](./tests/unit.tftest.hcl) file. This is a complex map describing aspects of the workspaces to be created.
+As stated above, to see a full definition of the `var.applications` variable, check the [`tests/unit.tftest.hcl`](../../tests/unit.tftest.hcl) file. This is a complex map describing aspects of the workspaces to be created.
 
 It has been defined fully, so the Terraform registry should describe all the keys properly.
 
