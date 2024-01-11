@@ -118,7 +118,7 @@ resource "aws_iam_user_policy_attachment" "this" {
 
 module "workspace_user_policy" {
   source  = "app.terraform.io/guidion/helper-workspace-policy/aws"
-  version = "~> 1.0"
+  version = "~> 2.0"
 
   application_name     = var.application_name
   application_role_arn = one(aws_iam_role.application[*].arn)
