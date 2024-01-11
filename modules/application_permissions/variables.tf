@@ -42,8 +42,7 @@ variable "api_app" {
     sqs_arns            = list(string),
     sns_arns            = list(string),
     event_arns          = list(string),
-    ruleset_arns        = list(string),
-    hosted_zone_id      = string
+    ruleset_arns        = list(string)
   })
 
   default = null

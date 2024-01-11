@@ -131,8 +131,7 @@ module "permissions" {
       "arn:aws:wafv2:*:${data.aws_caller_identity.current.account_id}:regional/webacl/${each.key}-regional-web-acl/",
       "arn:aws:wafv2:*:${data.aws_caller_identity.current.account_id}:regional/webacl/${each.key}-regional-web-acl/*",
       "arn:aws:wafv2:*:${data.aws_caller_identity.current.account_id}:regional/managedruleset/*/*"
-    ],
-    hosted_zone_id : "Z0331347122BAPHPJG1K6"
+    ]
   } : null
 
   container_app = each.value.app_type == "container" ? {
