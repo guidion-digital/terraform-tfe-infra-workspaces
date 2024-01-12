@@ -118,7 +118,7 @@ resource "aws_iam_user_policy_attachment" "this" {
 
 module "workspace_user_policy" {
   source  = "app.terraform.io/guidion/helper-workspace-policy/aws"
-  version = "~> 2.0"
+  version = "< 3.0"
 
   application_name     = var.application_name
   application_role_arn = one(aws_iam_role.application[*].arn)
@@ -130,39 +130,25 @@ module "workspace_user_policy" {
   container_app = var.container_app
 }
 
-resource "aws_iam_user_policy_attachment" "cdn_policy" {
-  count = var.cdn_app != null ? 1 : 0
+resource "aws_iam_user_policy_attachment" "cdn_policies" {
+  count = length(module.workspace_user_policy.cdn_type_policy_arns)
 
   user       = aws_iam_user.this.name
-  policy_arn = module.workspace_user_policy.cdn_type_policy_arn
+  policy_arn = module.workspace_user_policy.cdn_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "api_policy" {
-  count = var.api_app != null ? 1 : 0
+resource "aws_iam_user_policy_attachment" "api_policies" {
+  count = length(module.workspace_user_policy.api_type_policy_arns)
 
   user       = aws_iam_user.this.name
-  policy_arn = module.workspace_user_policy.api_type_policy_arn
+  policy_arn = module.workspace_user_policy.api_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "api_policy2" {
-  count = var.api_app != null ? 1 : 0
+resource "aws_iam_user_policy_attachment" "container_policies" {
+  count = length(module.workspace_user_policy.container_type_policy_arns)
 
   user       = aws_iam_user.this.name
-  policy_arn = module.workspace_user_policy.api_type_policy_arn2
-}
-
-resource "aws_iam_user_policy_attachment" "api_policy3" {
-  count = var.api_app != null ? 1 : 0
-
-  user       = aws_iam_user.this.name
-  policy_arn = module.workspace_user_policy.api_type_policy_arn3
-}
-
-resource "aws_iam_user_policy_attachment" "container_policy" {
-  count = var.container_app != null ? 1 : 0
-
-  user       = aws_iam_user.this.name
-  policy_arn = module.workspace_user_policy.container_type_policy_arn
+  policy_arn = module.workspace_user_policy.container_type_policy_arns[count.index]
 }
 
 resource "aws_iam_user_policy_attachment" "secrets_policy" {
