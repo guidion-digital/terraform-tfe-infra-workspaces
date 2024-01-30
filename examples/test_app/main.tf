@@ -6,6 +6,7 @@ variable "parent_zone" {}
 variable "workspace_policy" { default = null }
 variable "applications" { default = {} }
 variable "remote_state_consumer_names" { default = [] }
+variable "teams" {}
 
 module "workspaces" {
   source = "../../"
@@ -16,6 +17,7 @@ module "workspaces" {
   aws_region       = "eu-central-1"
   applications     = var.applications
   workspace_policy = var.workspace_policy
+  teams            = var.teams
 
   # N.B. There is no value for this in any of the tests, and it's only here to
   # ensure all possible fields are shown

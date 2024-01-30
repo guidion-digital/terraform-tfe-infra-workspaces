@@ -83,3 +83,18 @@ variable "remote_state_consumer_names" {
   description = "List of workspace names to share state of this workspace with"
   default     = []
 }
+
+variable "teams" {
+  description = "Teams to give access to the application workspaces created"
+
+  type = map(object({
+    runs              = optional(string, "apply"),
+    variables         = optional(string, "read"),
+    state_versions    = optional(string, "read"),
+    sentinel_mocks    = optional(string, "read"),
+    workspace_locking = optional(bool, false),
+    run_tasks         = optional(bool, true)
+  }))
+
+  default = {}
+}

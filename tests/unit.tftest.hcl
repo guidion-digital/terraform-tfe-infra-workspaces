@@ -5,6 +5,17 @@ variables {
   project         = "constr"
   stage           = "dev"
   parent_zone     = "dev.constr.guidion.io"
+
+  teams = {
+    engineering = {
+      runs              = "apply"
+      variables         = "read"
+      state_versions    = "read"
+      sentinel_mocks    = "read"
+      workspace_locking = false
+      run_tasks         = true
+    }
+  }
 }
 
 # Application instance tests
@@ -22,6 +33,7 @@ run "application_workspaces" {
     project         = var.project
     stage           = var.stage
     parent_zone     = var.parent_zone
+    teams           = var.teams
 
     # A few applications to demonstrate different ways of setting permissions
     applications = {

@@ -67,6 +67,16 @@ resource "tfe_workspace" "this" {
   execution_mode = length(var.applications) == 0 ? try(var.workspace_execution_mode, "remote") : each.value["workspace_execution_mode"] != null ? each.value["workspace_execution_mode"] : try(var.workspace_execution_mode, "remote")
 }
 
+module "teams" {
+  for_each = local.application_workspaces
+
+  source = "./modules/team_access"
+
+  organization = var.organization
+  teams        = var.teams
+  workspace_id = tfe_workspace.this[each.key].id
+}
+
 module "variables" {
   source   = "./modules/tfe_variables"
   for_each = var.applications
