@@ -62,8 +62,8 @@ resource "aws_iam_role_policy_attachment" "aux" {
 #
 # https://github.com/guidion-digital/terrappy/blob/master/permissions.md
 module "services_policy" {
-  source  = "app.terraform.io/guidion/helper-application-policy/aws"
-  version = "0.0.4"
+  source  = "guidion-digital/helper-application-policy/aws"
+  version = "1.0.0"
 
   application_name = var.application_name
 
