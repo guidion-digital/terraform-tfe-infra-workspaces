@@ -5,6 +5,9 @@ locals {
   create_application_role = length(local.services) != 0 && (length(var.application_policy_arns) != 0 || var.application_policy != null)
 }
 
+# We create an IAM role here which will be in the allowed list of roles that
+# this workspace IAM user will be able to pass on to it's services. This is
+# done with aws_iam_policy.pass_role below
 resource "aws_iam_role" "application" {
   count = local.create_application_role == true ? 1 : 0
 
@@ -50,6 +53,14 @@ resource "aws_iam_role_policy_attachment" "aux" {
   policy_arn = aws_iam_policy.this[0].arn
 }
 
+# We create a policy based on a set of services that the application in this
+# workspace is going to use (currently just SQS and DynamoDB are supported).
+# Then we attach it to the default application role created above
+# (aws_iam_role.application)
+#
+# This is documented properly here:
+#
+# https://github.com/guidion-digital/terrappy/blob/master/permissions.md
 module "services_policy" {
   source  = "app.terraform.io/guidion/helper-application-policy/aws"
   version = "0.0.4"
@@ -90,6 +101,7 @@ data "aws_iam_role" "supplied_application_roles" {
 }
 
 # We give the IAM user that TFC will use permission to:
+#
 #   * Create resources necessary for the application
 #   * Pass the application role created above / passed to us, to the services using them
 #
