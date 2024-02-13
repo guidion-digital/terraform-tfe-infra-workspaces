@@ -22,21 +22,7 @@ So called "infrastructure" workspaces are those that later run this module thems
 
 # Permissions
 
-For each entry in `var.applications`:
-
-- A TFC workspace will be created
-- An IAM user will be created, along with credentials which will be populated into workspace's `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` variables. The IAM user will:
-  - Have only the permissions necessary to create the application module's resources, by either:
-    - Specifying `var.applications{}.workspace_policy` with a fully formed JSON policy document
-    - Specifying one of `cdn`, `api`, or `container` for `var.applications{}.app_type` (you will also need to set `var.applications{}.domain_account_role` in this case)
-  - Be able to pass the application IAM roles to the application (see next point)
-- IAM roles for use with the resources deployed (the application) will be _created_ and/or _accepted_ as arguments:
-  - **Created** if either `application_policy_arns` or `application_policies` is given (see [example "api-app-x"](./examples/test_app/main.tf)). In this case, a variable called `var.role_arn` will be created in the workspace, containing the ARN of a role with the provided policies. **`service_types` must also be set**
-  - **Accepted** if `application_role_arn_names` is given of existing roles (see [example "api-app-y"](./examples/test_app/main.tf))
-  - All three can be provided, in which case the workspace IAM user will be permitted to pass a concatenation of the passed roles, and the role the module creates
-- A policy with additional permissions for the application will be created based on the values in `var.applications{}.supporting_services`, which gives necessary permissions to supporting resources such as DynamoDB tables, restricted by namespacing based on the application name
-
-Note that the only roles the application resources can be passed are those this module knows about via `application_role_arn_names`, `application_policy_arns`, or `application_policies`.
+Please see the [Terrappy Permissions](https://github.com/guidion-digital/terrappy/blob/master/permissions.md) page for how permissions for both the workspaces and applications that they deploy, works.
 
 ## Good-to-Knows and Gotchyas
 
