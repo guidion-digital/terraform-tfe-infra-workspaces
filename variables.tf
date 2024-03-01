@@ -22,6 +22,7 @@ variable "applications" {
   description = <<-EOT
     applications = {
       app_type                        = "Used to work out permissions for _workspace_ role"
+      github                          = "TFE team token can be stored in Github environment secret. See type definition for object fields"
       working_directory               = "Directory to change into before executing. Useful for examples inside the module's own repo"
       workspace_policy                = "Will be added to the workspace role"
       workspace_execution_mode        = "'remote' or 'local', defaults to remote"
@@ -40,7 +41,11 @@ variable "applications" {
   EOT
 
   type = map(object({
-    app_type                        = optional(string, null),
+    app_type = optional(string, null),
+    github = optional(object({
+      repository  = string,
+      environment = optional(string, null)
+    }), null),
     working_directory               = optional(string, null),
     workspace_policy                = optional(string, null),
     workspace_execution_mode        = optional(string),
