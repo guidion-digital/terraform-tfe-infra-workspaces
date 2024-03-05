@@ -44,6 +44,15 @@ resource "github_actions_environment_secret" "tfe_team_key" {
   plaintext_value = tfe_team_token.this[each.key].token
 }
 
+resource "github_actions_environment_variable" "workspace_name" {
+  for_each = { for k, v in local.application_workspaces : k => v if v.github != null }
+
+  repository    = each.value.github.repository
+  environment   = each.value.github.environment == null ? var.stage : each.value.github.environment
+  variable_name = "WORKSPACE"
+  value         = each.key
+}
+
 # Fetch informtion (though only the workspace ID is used below) on workspaces
 # specified in var.remote_state_consumer_names, so that we can share this
 # workspace's data with them
