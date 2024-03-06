@@ -29,3 +29,5 @@ Please see the [Terrappy Permissions](https://github.com/guidion-digital/terrapp
 It is _not_ possible to pass a non-pre-existing policy to `application_policy_arns`. If custom policies are needed for the default application role, you can either create a role with them and pass it to `application_role_arn_names`, or pass the policy string to `application_policy`.
 
 The role that applications are permitted to assume include policies granting access to additional AWS resources such as DynamoDB, if listed in `var.applications{}.supporting_services`. Permissions restrict resources by the application's name as a namespace. E.g. an application called `app-x` will be permitted read/write to tables named `arn:aws:dynamodb:*:*:table/app-x-*`
+
+When supplying the `var.applications{}.github` object, ensure that the token being used in your Github provider definition has access to the repository referenced.
