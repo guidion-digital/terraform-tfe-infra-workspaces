@@ -49,7 +49,7 @@ resource "github_actions_environment_variable" "workspace_name" {
 
   repository    = each.value.github.repository
   environment   = each.value.github.environment == null ? var.stage : each.value.github.environment
-  variable_name = "WORKSPACE"
+  variable_name = "TFC_WORKSPACE"
   value         = each.key
 }
 
