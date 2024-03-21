@@ -34,7 +34,6 @@ resource "tfe_team_token" "this" {
 
   team_id = tfe_team.this[each.key].id
 }
-
 resource "github_actions_environment_secret" "tfe_team_key" {
   for_each = { for k, v in local.application_workspaces : k => v if v.github != null }
 
@@ -42,6 +41,42 @@ resource "github_actions_environment_secret" "tfe_team_key" {
   environment     = each.value.github.environment == null ? var.stage : each.value.github.environment
   secret_name     = "TFC_API_TOKEN"
   plaintext_value = tfe_team_token.this[each.key].token
+}
+# We want a plan-only token too
+resource "tfe_team" "plan_only" {
+  for_each = local.application_workspaces
+
+  organization = var.organization
+  name         = "${each.key}-plan-only"
+  visibility   = "organization"
+}
+resource "tfe_team_access" "plan_only" {
+  for_each = local.application_workspaces
+
+  team_id      = tfe_team.this["${each.key}-plan-only"].id
+  workspace_id = tfe_workspace.this[each.key].id
+
+  permissions {
+    runs              = "plan"
+    variables         = "read"
+    state_versions    = "read"
+    sentinel_mocks    = "read"
+    workspace_locking = false
+    run_tasks         = true
+  }
+}
+resource "tfe_team_token" "plan_only" {
+  for_each = local.application_workspaces
+
+  team_id = tfe_team.this["${each.key}-plan-only"].id
+}
+resource "github_actions_environment_secret" "tfe_plan_only_team_key" {
+  for_each = { for k, v in local.application_workspaces : k => v if v.github != null }
+
+  repository      = each.value.github.repository
+  environment     = each.value.github.environment == null ? "${var.stage}-plan" : "${each.value.github.environment}-plan"
+  secret_name     = "TFC_PLAN_ONLY_API_TOKEN"
+  plaintext_value = tfe_team_token.this["${each.key}-plan-only"].token
 }
 
 resource "github_actions_environment_variable" "workspace_name" {

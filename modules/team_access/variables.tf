@@ -16,4 +16,7 @@ variable "workspace_id" {
   type        = string
 }
 
-variable "organization" {}
+variable "organization" {
+  description = "TFC organisation name"
+  type        = string
+}
