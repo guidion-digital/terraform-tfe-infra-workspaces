@@ -69,12 +69,18 @@ locals {
 resource "tfe_workspace" "this" {
   for_each = local.workspaces
 
-  name                      = each.key
-  working_directory         = try(each.value["working_directory"], null)
-  description               = "Deploys for the ${each.key} item/environment in the ${var.project} project"
-  organization              = var.organization
-  remote_state_consumer_ids = local.remote_state_consumer_ids
-  tag_names                 = local.tags
+  name                          = each.key
+  working_directory             = try(each.value["working_directory"], null)
+  auto_apply                    = try(each.value["workspace_settings"]["auto_apply"], null)
+  structured_run_output_enabled = try(each.value["workspace_settings"]["structured_run_output_enabled"], null)
+  ssh_key_id                    = try(each.value["workspace_settings"]["ssh_key_id"], null)
+  terraform_version             = try(each.value["workspace_settings"]["terraform_version"], null)
+  trigger_patterns              = try(each.value["workspace_settings"]["trigger_patterns"], null)
+  trigger_prefixes              = try(each.value["workspace_settings"]["trigger_prefixes"], null)
+  description                   = "Deploys for the ${each.key} item/environment in the ${var.project} project"
+  organization                  = var.organization
+  remote_state_consumer_ids     = local.remote_state_consumer_ids
+  tag_names                     = local.tags
 
   # Oh gods I'm so sorry :(
   # - If this is an infrastructure workspace then:

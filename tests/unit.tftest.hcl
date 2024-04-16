@@ -37,6 +37,32 @@ run "application_workspaces" {
 
     # A few applications to demonstrate different ways of setting permissions
     applications = {
+      api-app-alpha = {
+        app_type            = "api",
+        service_types       = ["lambda"],
+        domain_account_role = var.networking_role,
+
+        # Just a few of the workspace settings
+        workspace_settings = {
+          auto_apply                    = false
+          structured_run_output_enabled = false
+          terraform_version             = "1.6.1"
+          trigger_patterns              = ["triggered"]
+        }
+
+        # This policy will be attached to the role created by this module, whose
+        # name is in var.role_arn
+        application_policy_arns = ["arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"],
+
+        terraform_variables = {
+          parent_zone         = var.parent_zone,
+          application_name    = "api-app-alpha",
+          project             = var.project,
+          domain_account_role = var.networking_role,
+          stage               = var.stage
+        }
+      },
+
       api-app-x = {
         app_type            = "api",
         service_types       = ["lambda"],
@@ -87,7 +113,17 @@ run "application_workspaces" {
 
   assert {
     condition     = contains(keys(module.workspaces.workspaces), "${var.project}-${var.stage}-api-app-x")
-    error_message = "An application workspace that should have been created, wasn't"
+    error_message = "An application workspace that should have been created, wasn't (api-app-x)"
+  }
+
+  assert {
+    condition     = contains(keys(module.workspaces.workspaces), "${var.project}-${var.stage}-api-app-alpha")
+    error_message = "An application workspace that should have been created, wasn't (api-app-alpha)"
+  }
+
+  assert {
+    condition     = module.workspaces.workspaces["${var.project}-${var.stage}-api-app-alpha"].terraform_version == "1.6.1"
+    error_message = "The terraform_version attribute was not correctly set for the 'api-app-alpha' workspace"
   }
 }
 
