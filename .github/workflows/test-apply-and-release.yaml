@@ -1,0 +1,39 @@
+name: Tests applies and releases new version
+
+on:
+  push:
+    branches: [acc]
+
+jobs:
+  tests-apply:
+    uses: guidion-digital/terrappy/.github/workflows/tfc-test-helper-module-apply.yaml@v1
+    with:
+      environment_name: "localstack"
+
+  workflow-change:
+    if: ${{ needs.tests-apply.outputs.local-stack-apply-result != 'success' && needs.tests-apply.outputs.terraform-file-changes-result == 'false' }}
+    needs: tests-apply
+    uses: guidion-digital/release-workflows/.github/workflows/github-merge-into-master.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}
+    permissions:
+      contents: write
+
+  # Merges acc into master and release new tag for the module because a change to Terraform code has been made.
+  terraform-module-change:
+    if: ${{ needs.tests-apply.outputs.local-stack-apply-result == 'success' }}
+    needs: tests-apply
+    uses: guidion-digital/release-workflows/.github/workflows/github-merge-into-master.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}
+    permissions:
+      contents: write
+
+  # release-module-version:
+  #   if: ${{ needs.tests-apply.outputs.local-stack-apply-result == 'success' }}
+  #   needs: [tests-apply, terraform-module-change]
+  #   uses: guidion-digital/release-workflows/.github/workflows/github-release-tag.yaml@v2
+  #   with:
+  #     branch: ${{ github.ref_name }}
+  #   permissions:
+  #     contents: write
