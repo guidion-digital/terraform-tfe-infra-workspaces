@@ -1,9 +1,11 @@
 variable "organization" {
   description = "TFE organization name"
+  type        = string
 }
 
 variable "project" {
   description = "Can be thought of as the Organisational Unit. Used for naming and tagging. It is _not_ the application name"
+  type        = string
 }
 
 variable "workspace_execution_mode" {
@@ -89,6 +91,7 @@ variable "applications" {
 
 variable "stage" {
   description = "Optional (AWS) stage application will be deployed in"
+  type        = string
 }
 
 variable "additional_tags" {
@@ -99,15 +102,18 @@ variable "additional_tags" {
 
 variable "aws_region" {
   description = "Where we'll be deploying to"
+  type        = string
 }
 
 variable "slack_webhook_url" {
   description = "Used for notifications"
+  type        = string
   default     = "UNUSED FOR NOW"
 }
 
 variable "remote_state_consumer_names" {
   description = "List of workspace names to share state of this workspace with"
+  type        = string
   default     = []
 }
 
