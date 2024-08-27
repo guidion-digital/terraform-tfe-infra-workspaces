@@ -100,16 +100,16 @@ variable "additional_tags" {
   default     = []
 }
 
-variable "aws_region" {
-  description = "Where we'll be deploying to"
-  type        = string
-}
+# variable "aws_region" {
+#   description = "Where we'll be deploying to"
+#   type        = string
+# }
 
-variable "slack_webhook_url" {
-  description = "Used for notifications"
-  type        = string
-  default     = "UNUSED FOR NOW"
-}
+# variable "slack_webhook_url" {
+#   description = "Used for notifications"
+#   type        = string
+#   default     = "UNUSED FOR NOW"
+# }
 
 variable "remote_state_consumer_names" {
   description = "List of workspace names to share state of this workspace with"
