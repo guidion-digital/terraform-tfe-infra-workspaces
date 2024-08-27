@@ -6,7 +6,6 @@ on:
 
 jobs:
   tests-terraform:
-    needs: test-workflow
     uses: guidion-digital/terrappy/.github/workflows/tfc-test-basic.yaml@tfc-most-basic-test
     permissions:
       contents: read
