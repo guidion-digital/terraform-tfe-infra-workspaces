@@ -31,11 +31,11 @@ jobs:
     permissions:
       contents: write
 
-  # release-module-version:
-  #   if: ${{ needs.tests-terraform.outputs.terraform-validate-result == 'success' && needs.tests-terraform.outputs.terraform-lint-result == 'success' }}
-  #   needs: [tests-terraform, terraform-module-change]
-  #   uses: guidion-digital/release-workflows/.github/workflows/github-release-tag.yaml@v2
-  #   with:
-  #     branch: ${{ github.ref_name }}
-  #   permissions:
-  #     contents: write
+  release-module-version:
+    if: ${{ needs.tests-terraform.outputs.terraform-validate-result == 'success' && needs.tests-terraform.outputs.terraform-lint-result == 'success' }}
+    needs: [tests-terraform, terraform-module-change]
+    uses: guidion-digital/release-workflows/.github/workflows/github-release-tag.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}
+    permissions:
+      contents: write
