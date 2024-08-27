@@ -20,7 +20,7 @@ jobs:
       pull-requests: write
 
   release-dry-run:
-    needs: [test-workflow, tests-validate, tests-lint]
+    needs: [test-workflow, tests-terraform]
     uses: guidion-digital/release-workflows/.github/workflows/github-release-tag-dry-run.yaml@v2
     with:
       branch: ${{ github.ref_name }}
