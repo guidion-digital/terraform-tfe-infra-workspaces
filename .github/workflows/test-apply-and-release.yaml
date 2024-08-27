@@ -1,0 +1,41 @@
+name: Tests applies and releases new version
+
+on:
+  push:
+    branches: [acc]
+
+jobs:
+  tests-terraform:
+    uses: guidion-digital/terrappy/.github/workflows/tfc-test-basic.yaml@tfc-most-basic-test
+    permissions:
+      contents: read
+      pull-requests: write
+
+
+  workflow-change:
+    if: ${{ needs.tests-terraform.outputs.terraform-validate-result != 'success' && needs.tests-terraform.outputs.terraform-lint-result != 'success' && needs.tests-terraform.outputs.terraform-file-changes-result == 'false' }}
+    needs: tests-terraform
+    uses: guidion-digital/release-workflows/.github/workflows/github-merge-into-master.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}
+    permissions:
+      contents: write
+
+  # Merges acc into master and release new tag for the module because a change to Terraform code has been made.
+  terraform-module-change:
+    if: ${{ needs.tests-terraform.outputs.terraform-validate-result == 'success' && needs.tests-terraform.outputs.terraform-lint-result == 'success' }}
+    needs: tests-terraform
+    uses: guidion-digital/release-workflows/.github/workflows/github-merge-into-master.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}
+    permissions:
+      contents: write
+
+  # release-module-version:
+  #   if: ${{ needs.tests-terraform.outputs.terraform-validate-result == 'success' && needs.tests-terraform.outputs.terraform-lint-result == 'success' }}
+  #   needs: [tests-terraform, terraform-module-change]
+  #   uses: guidion-digital/release-workflows/.github/workflows/github-release-tag.yaml@v2
+  #   with:
+  #     branch: ${{ github.ref_name }}
+  #   permissions:
+  #     contents: write

@@ -1,0 +1,26 @@
+name: Tests plans
+
+on:
+  pull_request:
+    branches: [acc]
+    types: [opened, edited, synchronize]
+
+jobs:
+  test-workflow:
+    uses: guidion-digital/release-workflows/.github/workflows/github-test-workflow.yaml@v2
+    permissions:
+      pull-requests: write
+      contents: read
+
+  tests-terraform:
+    needs: test-workflow
+    uses: guidion-digital/terrappy/.github/workflows/tfc-test-basic.yaml@tfc-most-basic-test
+    permissions:
+      contents: read
+      pull-requests: write
+
+  release-dry-run:
+    needs: [test-workflow, tests-terraform]
+    uses: guidion-digital/release-workflows/.github/workflows/github-release-tag-dry-run.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}

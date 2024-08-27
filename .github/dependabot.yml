@@ -1,0 +1,30 @@
+version: 2
+
+registries:
+  terraform-registry:
+    type: terraform-registry
+    url: https://app.terraform.io
+    token: ${{secrets.TFC_PLANNER_API_TOKEN}}
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+  - package-ecosystem: "terraform"
+    directory: "/"
+    registries: "*"
+    schedule:
+      interval: "daily"
+    groups:
+      terraform-minor-and-patches:
+        update-types:
+        - "minor"
+        - "patch"
+      terraform-major:
+        update-types:
+        - "major"
