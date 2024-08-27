@@ -113,7 +113,7 @@ variable "slack_webhook_url" {
 
 variable "remote_state_consumer_names" {
   description = "List of workspace names to share state of this workspace with"
-  type        = string
+  type        = list
   default     = []
 }
 
