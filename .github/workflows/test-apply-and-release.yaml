@@ -6,7 +6,7 @@ on:
 
 jobs:
   tests-terraform:
-    uses: guidion-digital/terrappy/.github/workflows/tfc-test-basic.yaml@tfc-most-basic-test
+    uses: guidion-digital/terrappy/.github/workflows/tfc-test-basic.yaml@v1
     permissions:
       contents: read
       pull-requests: write
@@ -31,11 +31,11 @@ jobs:
     permissions:
       contents: write
 
-  # release-module-version:
-  #   if: ${{ needs.tests-terraform.outputs.terraform-validate-result == 'success' && needs.tests-terraform.outputs.terraform-lint-result == 'success' }}
-  #   needs: [tests-terraform, terraform-module-change]
-  #   uses: guidion-digital/release-workflows/.github/workflows/github-release-tag.yaml@v2
-  #   with:
-  #     branch: ${{ github.ref_name }}
-  #   permissions:
-  #     contents: write
+  release-module-version:
+    if: ${{ needs.tests-terraform.outputs.terraform-validate-result == 'success' && needs.tests-terraform.outputs.terraform-lint-result == 'success' }}
+    needs: [tests-terraform, terraform-module-change]
+    uses: guidion-digital/release-workflows/.github/workflows/github-release-tag.yaml@v2
+    with:
+      branch: ${{ github.ref_name }}
+    permissions:
+      contents: write
