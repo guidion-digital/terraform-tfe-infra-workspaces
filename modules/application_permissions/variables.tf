@@ -62,6 +62,11 @@ variable "container_app" {
   default = null
 }
 
+variable "ec2_app" {
+  description = "Values used when creating IAM resources for an EC2 application type"
+  default = null
+}
+
 variable "supporting_services" {
   description = "List of AWS services this application uses"
   default     = []
