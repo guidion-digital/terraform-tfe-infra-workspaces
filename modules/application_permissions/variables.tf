@@ -65,7 +65,7 @@ variable "container_app" {
 variable "ec2_app" {
   description = "Values used when creating IAM resources for an EC2 application type"
 
-    type = object({
+  type = object({
     targetgroup_arn : string,
     loadbalancers : list(string),
     loadbalancer_listener_arn : string,
