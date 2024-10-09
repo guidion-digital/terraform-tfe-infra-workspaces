@@ -180,7 +180,15 @@ module "permissions" {
     ],
   } : null
 
-  ec2_app = each.value.app_type == "ec2" ? {} : null
+  ec2_app = each.value.app_type == "ec2" ? {
+    targetgroup_arn           = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
+    loadbalancers = [
+      "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${each.key}/*",
+      "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/${each.key}",
+      "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/net/${each.key}/*"
+    ],
+    loadbalancer_listener_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:listener/net/${each.key}/*",
+  } : null
 }
 
 # If this is an infrastructure workspace and there's no existing IAM user, get
