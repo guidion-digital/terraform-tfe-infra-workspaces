@@ -133,7 +133,7 @@ module "permissions" {
   supporting_services        = each.value.supporting_services == null ? [] : each.value.supporting_services
   domain_account_role        = each.value.domain_account_role == null ? null : each.value.domain_account_role
   project                    = var.project
-  aws_region                 = "eu-central-1"
+  aws_region                 = var.aws_region 
   workspace_id               = tfe_workspace.this["${var.project}-${var.stage}-${each.key}"].id
 
   cdn_app = each.value.app_type == "cdn" ? {
