@@ -31,6 +31,13 @@ resource "aws_iam_role" "application" {
   }
 }
 
+resource "aws_iam_instance_profile" "this" {
+  count = var.ec2_app != null ? 1 : 0
+
+  name = var.name
+  role = one(aws_iam_role.application[*].name)
+}
+
 resource "aws_iam_role_policy_attachment" "application" {
   for_each = local.create_application_role == true && length(var.application_policy_arns) != 0 ? toset(var.application_policy_arns) : []
 
