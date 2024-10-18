@@ -8,6 +8,12 @@ variable "project" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "AWS Region for applications to be deployed in"
+  type        = string
+  default     = "eu-central-1"
+}
+
 variable "workspace_execution_mode" {
   description = "Whether to run Terraform on TFC or on your machine. Used only for infrastructure workspaces"
   default     = null
