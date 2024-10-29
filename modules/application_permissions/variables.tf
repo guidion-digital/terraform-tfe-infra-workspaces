@@ -52,10 +52,10 @@ variable "lambda_app" {
   description = "Values used when creating IAM resources for an Lambda application"
 
   type = object({
-    firewall_ipset_arns = list(string),
-    dynamodb_arns       = list(string),
-    sqs_arns            = list(string),
-    sns_arns            = list(string),
+    dynamodb_arns = list(string),
+    sqs_arns      = list(string),
+    sns_arns      = list(string),
+    event_arns    = list(string),
   })
 
   default = null
