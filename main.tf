@@ -133,7 +133,7 @@ module "permissions" {
   supporting_services        = each.value.supporting_services == null ? [] : each.value.supporting_services
   domain_account_role        = each.value.domain_account_role == null ? null : each.value.domain_account_role
   project                    = var.project
-  aws_region                 = var.aws_region 
+  aws_region                 = var.aws_region
   workspace_id               = tfe_workspace.this["${var.project}-${var.stage}-${each.key}"].id
 
   cdn_app = each.value.app_type == "cdn" ? {
@@ -168,6 +168,25 @@ module "permissions" {
     ]
   } : null
 
+  lambda_app = each.value.app_type == "lambda" ? {
+    event_arns = [
+      "arn:aws:events:*:${data.aws_caller_identity.current.account_id}:rule/${each.key}-*"
+    ],
+    dynamodb_arns = [
+      "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${each.key}*",
+      "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${each.key}/stream/*"
+    ],
+    sqs_arns = [
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}-*.fifo",
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}-*-dlq.fifo",
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}-*",
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}*"
+    ]
+    sns_arns = [
+      "arn:aws:sns:*:${data.aws_caller_identity.current.account_id}:${each.key}*"
+    ]
+  } : null
+
   container_app = each.value.app_type == "container" ? {
     targetgroup_arn           = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
     loadbalancer_listener_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:listener/net/${each.key}/*",
@@ -181,7 +200,7 @@ module "permissions" {
   } : null
 
   ec2_app = each.value.app_type == "ec2" ? {
-    targetgroup_arn           = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
+    targetgroup_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
     loadbalancers = [
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${each.key}/*",
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/${each.key}",
