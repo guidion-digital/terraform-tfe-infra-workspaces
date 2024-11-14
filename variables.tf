@@ -115,7 +115,7 @@ variable "additional_tags" {
 
 variable "remote_state_consumer_names" {
   description = "List of workspace names to share state of this workspace with"
-  type        = list(any)
+  type        = list(string)
   default     = []
 }
 
