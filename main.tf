@@ -74,7 +74,7 @@ resource "tfe_workspace" "this" {
   auto_apply                    = try(each.value["workspace_settings"]["auto_apply"], null)
   structured_run_output_enabled = try(each.value["workspace_settings"]["structured_run_output_enabled"], null)
   ssh_key_id                    = try(each.value["workspace_settings"]["ssh_key_id"], null)
-  terraform_version             = try(each.value["workspace_settings"]["terraform_version"], null)
+  terraform_version             = try(each.value["workspace_settings"]["terraform_version"], var.workspace_terraform_version)
   trigger_patterns              = try(each.value["workspace_settings"]["trigger_patterns"], null)
   trigger_prefixes              = try(each.value["workspace_settings"]["trigger_prefixes"], null)
   description                   = "Deploys for the ${each.key} item/environment in the ${var.project} project"
@@ -133,7 +133,7 @@ module "permissions" {
   supporting_services        = each.value.supporting_services == null ? [] : each.value.supporting_services
   domain_account_role        = each.value.domain_account_role == null ? null : each.value.domain_account_role
   project                    = var.project
-  aws_region                 = var.aws_region 
+  aws_region                 = var.aws_region
   workspace_id               = tfe_workspace.this["${var.project}-${var.stage}-${each.key}"].id
 
   cdn_app = each.value.app_type == "cdn" ? {
@@ -181,7 +181,7 @@ module "permissions" {
   } : null
 
   ec2_app = each.value.app_type == "ec2" ? {
-    targetgroup_arn           = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
+    targetgroup_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
     loadbalancers = [
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${each.key}/*",
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/${each.key}",
