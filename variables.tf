@@ -28,6 +28,7 @@ variable "workspace_policy" {
 
 variable "workspace_terraform_version" {
   description = "Terraform version to set for created workspaces"
+  type        = string
   default     = "1.6.1"
 }
 
