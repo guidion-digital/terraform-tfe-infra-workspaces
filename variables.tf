@@ -26,6 +26,13 @@ variable "workspace_policy" {
   type        = string
 }
 
+variable "workspace_terraform_version" {
+  description = "Terraform version to set for created workspaces"
+  type        = string
+  default     = "1.6.1"
+}
+
+
 variable "applications" {
   description = <<-EOT
     applications = {
@@ -108,7 +115,7 @@ variable "additional_tags" {
 
 variable "remote_state_consumer_names" {
   description = "List of workspace names to share state of this workspace with"
-  type        = list
+  type        = list(string)
   default     = []
 }
 
@@ -126,4 +133,3 @@ variable "teams" {
 
   default = {}
 }
-
