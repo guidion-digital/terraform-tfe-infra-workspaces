@@ -74,7 +74,7 @@ resource "tfe_workspace" "this" {
   auto_apply                    = try(each.value["workspace_settings"]["auto_apply"], null)
   structured_run_output_enabled = try(each.value["workspace_settings"]["structured_run_output_enabled"], null)
   ssh_key_id                    = try(each.value["workspace_settings"]["ssh_key_id"], null)
-  terraform_version             = try(each.value["workspace_settings"]["terraform_version"], null)
+  terraform_version             = each.value["workspace_settings"]["terraform_version"] == null ? var.workspace_terraform_version : null
   trigger_patterns              = try(each.value["workspace_settings"]["trigger_patterns"], null)
   trigger_prefixes              = try(each.value["workspace_settings"]["trigger_prefixes"], null)
   description                   = "Deploys for the ${each.key} item/environment in the ${var.project} project"
