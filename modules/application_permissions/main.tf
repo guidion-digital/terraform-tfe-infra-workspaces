@@ -146,6 +146,7 @@ module "workspace_user_policy" {
 
   cdn_app       = var.cdn_app
   api_app       = var.api_app
+  lambda_app    = var.lambda_app
   container_app = var.container_app
   ec2_app       = var.ec2_app
 }
@@ -162,6 +163,13 @@ resource "aws_iam_user_policy_attachment" "api_policies" {
 
   user       = aws_iam_user.this.name
   policy_arn = module.workspace_user_policy.api_type_policy_arns[count.index]
+}
+
+resource "aws_iam_user_policy_attachment" "lambda_policies" {
+  count = length(module.workspace_user_policy.lambda_type_policy_arns)
+
+  user       = aws_iam_user.this.name
+  policy_arn = module.workspace_user_policy.lambda_type_policy_arns[count.index]
 }
 
 resource "aws_iam_user_policy_attachment" "container_policies" {

@@ -168,6 +168,25 @@ module "permissions" {
     ]
   } : null
 
+  lambda_app = each.value.app_type == "lambda" ? {
+    event_arns = [
+      "arn:aws:events:*:${data.aws_caller_identity.current.account_id}:rule/${each.key}-*"
+    ],
+    dynamodb_arns = [
+      "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${each.key}*",
+      "arn:aws:dynamodb:*:${data.aws_caller_identity.current.account_id}:table/${each.key}/stream/*"
+    ],
+    sqs_arns = [
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}-*.fifo",
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}-*-dlq.fifo",
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}-*",
+      "arn:aws:sqs:*:${data.aws_caller_identity.current.account_id}:${each.key}*"
+    ]
+    sns_arns = [
+      "arn:aws:sns:*:${data.aws_caller_identity.current.account_id}:${each.key}*"
+    ]
+  } : null
+
   container_app = each.value.app_type == "container" ? {
     targetgroup_arn           = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}/*",
     loadbalancer_listener_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:listener/net/${each.key}/*",

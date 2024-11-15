@@ -48,6 +48,19 @@ variable "api_app" {
   default = null
 }
 
+variable "lambda_app" {
+  description = "Values used when creating IAM resources for an Lambda application"
+
+  type = object({
+    dynamodb_arns = list(string),
+    sqs_arns      = list(string),
+    sns_arns      = list(string),
+    event_arns    = list(string),
+  })
+
+  default = null
+}
+
 variable "container_app" {
   description = "Values used when creating IAM resources for a container (ECS) application"
 
@@ -70,7 +83,7 @@ variable "ec2_app" {
     loadbalancers : list(string),
     loadbalancer_listener_arn : string,
   })
-  
+
   default = null
 }
 
