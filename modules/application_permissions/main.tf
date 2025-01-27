@@ -149,6 +149,7 @@ module "workspace_user_policy" {
   lambda_app    = var.lambda_app
   container_app = var.container_app
   ec2_app       = var.ec2_app
+  s3_app        = var.s3_app
 }
 
 resource "aws_iam_user_policy_attachment" "cdn_policies" {

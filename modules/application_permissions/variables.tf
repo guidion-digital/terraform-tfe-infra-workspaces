@@ -87,6 +87,17 @@ variable "ec2_app" {
   default = null
 }
 
+variable "s3_app" {
+  description = "Values used when creating IAM resources for a S3 application"
+
+  type = object({
+    bucket_name = string
+  })
+
+  default = null
+}
+
+
 variable "supporting_services" {
   description = "List of AWS services this application uses"
   default     = []
