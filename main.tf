@@ -208,7 +208,7 @@ module "permissions" {
     ],
     loadbalancer_listener_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:listener/net/${each.key}/*",
   } : null
-Pmerg}
+}
 
 # If this is an infrastructure workspace and there's no existing IAM user, get
 # the workspace_policy from var.workspace_policy, create a user, and attach it
