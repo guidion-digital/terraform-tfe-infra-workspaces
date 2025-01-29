@@ -208,10 +208,6 @@ module "permissions" {
     ],
     loadbalancer_listener_arn = "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:listener/net/${each.key}/*",
   } : null
-
-  s3_app = each.value.app_type == "cdn" ? {
-    bucket_name = "${each.key}-${data.aws_caller_identity.current.account_id}"
-  } : null
 }
 
 # If this is an infrastructure workspace and there's no existing IAM user, get

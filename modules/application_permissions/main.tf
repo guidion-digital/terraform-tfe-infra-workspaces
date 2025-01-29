@@ -149,7 +149,6 @@ module "workspace_user_policy" {
   lambda_app    = var.lambda_app
   container_app = var.container_app
   ec2_app       = var.ec2_app
-  s3_app        = var.s3_app
 }
 
 resource "aws_iam_user_policy_attachment" "cdn_policies" {
@@ -190,6 +189,11 @@ resource "aws_iam_user_policy_attachment" "ec2_policies" {
 resource "aws_iam_user_policy_attachment" "secrets_policy" {
   user       = aws_iam_user.this.name
   policy_arn = module.workspace_user_policy.secrets_policy_arn
+}
+
+resource "aws_iam_user_policy_attachment" "s3_bucket_policy" {
+  user       = aws_iam_user.this.name
+  policy_arn = module.workspace_user_policy.s3_bucket_policy_arn
 }
 
 resource "aws_iam_user_policy_attachment" "common_policy" {
