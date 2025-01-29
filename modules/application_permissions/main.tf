@@ -196,6 +196,11 @@ resource "aws_iam_user_policy_attachment" "ssm_parameters_policy" {
   policy_arn = module.workspace_user_policy.ssm_parameters_policy_arn
 }
 
+resource "aws_iam_user_policy_attachment" "s3_bucket_policy" {
+  user       = aws_iam_user.this.name
+  policy_arn = module.workspace_user_policy.s3_bucket_policy_arn
+}
+
 resource "aws_iam_user_policy_attachment" "common_policy" {
   user       = aws_iam_user.this.name
   policy_arn = module.workspace_user_policy.common_policy_arn
