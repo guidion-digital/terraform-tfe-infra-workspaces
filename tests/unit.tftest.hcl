@@ -41,6 +41,7 @@ run "application_workspaces" {
         app_type            = "api",
         service_types       = ["lambda"],
         domain_account_role = var.networking_role,
+        supporting_services = ["sqs", "dynamodb", "elasticache", "s3"],
 
         # Just a few of the workspace settings
         workspace_settings = {

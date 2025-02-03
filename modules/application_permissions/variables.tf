@@ -92,8 +92,10 @@ variable "supporting_services" {
   default     = []
 
   validation {
-    condition     = !contains([for this_service in var.supporting_services : contains(["sqs", "dynamodb"], this_service)], false)
-    error_message = "Valid service supporting services are sqs or dynamodb"
+    condition = alltrue(flatten([
+      for service in var.supporting_services : contains(["sqs", "dynamodb", "elasticache", "s3"], service)
+    ]))
+    error_message = "supporting_services must be one of: sqs, dynamodb, elasticache, s3"
   }
 }
 
