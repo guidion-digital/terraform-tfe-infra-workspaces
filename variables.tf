@@ -100,6 +100,15 @@ variable "applications" {
   }))
 
   default = {}
+
+  validation {
+    condition = alltrue(flatten([
+      for app in var.applications : [
+        for service in app.supporting_services : contains(["sqs", "dynamodb", "elasticache", "s3"], service)
+      ]
+    ]))
+    error_message = "supporting_services must be one of: sqs, dynamodb, elasticache, s3"
+  }
 }
 
 variable "stage" {
