@@ -136,8 +136,9 @@ resource "aws_iam_user_policy_attachment" "this" {
 }
 
 module "workspace_user_policy" {
-  source  = "guidion-digital/helper-workspace-policy/aws"
-  version = "~> 2.0"
+  source = "git::https://github.com/guidion-digital/terraform-aws-helper-workspace-policy.git?ref=concat"
+  # source  = "guidion-digital/helper-workspace-policy/aws"
+  # version = "~> 2.0"
 
   application_name     = var.application_name
   application_role_arn = one(aws_iam_role.application[*].arn)
