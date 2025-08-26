@@ -129,7 +129,7 @@ module "permissions" {
   application_policy         = each.value.application_policy == null ? null : each.value.application_policy
   application_policy_arns    = each.value.application_policy_arns == null ? [] : each.value.application_policy_arns
   application_role_arn_names = each.value.application_role_arn_names == null ? [] : each.value.application_role_arn_names
-  application_role_arns      = each.value.application_role_arn_names == null ? [] : each.value.application_role_arn_names
+  application_role_arns      = each.value.application_role_arns == null ? [] : each.value.application_role_arns
   service_types              = each.value.service_types == null ? [] : each.value.service_types
   supporting_services        = each.value.supporting_services == null ? [] : each.value.supporting_services
   domain_account_role        = each.value.domain_account_role == null ? null : each.value.domain_account_role
