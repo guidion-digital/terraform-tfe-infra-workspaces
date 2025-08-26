@@ -55,6 +55,7 @@ variable "applications" {
       application_policy              = "Added to the application role"
       application_policy_arns         = "Added to the application role"
       application_role_arn_names      = "Will be added to the list of allowed roles for the application"
+      application_role_arns           = "Will be added to the list of allowed roles for the application"
       service_types                   = "AWS services which may use the application role"
       supporting_services             = "AWS services the application can have permissions for"
       terraform_variables             = "Map of (Terraform) string variables to give the workspace"
@@ -90,6 +91,7 @@ variable "applications" {
     application_policy              = optional(string, ""),
     application_policy_arns         = optional(list(string), []),
     application_role_arn_names      = optional(list(string), []),
+    application_role_arns           = optional(list(string), [])
     service_types                   = optional(list(string), []),
     supporting_services             = optional(list(string), []),
     terraform_variables             = optional(map(string), {}),

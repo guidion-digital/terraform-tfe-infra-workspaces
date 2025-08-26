@@ -116,6 +116,12 @@ variable "application_role_arn_names" {
   default     = []
 }
 
+variable "application_role_arns" {
+  description = "Ready-made roles to allow the IAM user to pass"
+  type        = list(string)
+  default     = []
+}
+
 variable "service_types" {
   description = "Needed in order to allow assumerole from these types"
   type        = list(string)

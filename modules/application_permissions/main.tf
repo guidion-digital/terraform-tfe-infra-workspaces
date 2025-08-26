@@ -120,9 +120,13 @@ resource "aws_iam_policy" "pass_role" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["iam:PassRole", "iam:GetRole"]
-        Resource = concat(data.aws_iam_role.supplied_application_roles[*].arn, aws_iam_role.application[*].arn)
+        Effect = "Allow"
+        Action = ["iam:PassRole", "iam:GetRole"]
+        Resource = concat(
+          data.aws_iam_role.supplied_application_roles[*].arn,
+          aws_iam_role.application[*].arn,
+          var.application_role_arns[*]
+        )
       }
     ]
   })
