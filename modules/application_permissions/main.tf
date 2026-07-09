@@ -6,7 +6,7 @@ locals {
 }
 
 # We create an IAM role here which will be in the allowed list of roles that
-# this workspace IAM user will be able to pass on to it's services. This is
+# this workspace IAM role will be able to pass on to its services. This is
 # done with aws_iam_policy.pass_role below
 resource "aws_iam_role" "application" {
   count = local.create_application_role == true ? 1 : 0
@@ -92,9 +92,72 @@ resource "aws_iam_role_policy_attachment" "application_policy" {
 
 ## TFE Permissions
 
-resource "aws_iam_user" "this" {
-  name = var.name
-  path = "/tfe/"
+data "aws_caller_identity" "current" {}
+
+locals {
+  tfc_oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/app.terraform.io"
+}
+
+# Bounds what gets attached to this role below (helper-workspace-policy output,
+# pass_role, etc). Even if one of those grants IAM write permissions, the role
+# can never modify its own trust policy, permissions boundary, or attached
+# policies, and can't create/delete other /tfe/ roles. This keeps the OIDC
+# trust conditions above from being rewritten by a run using this role.
+data "aws_iam_policy_document" "role_boundary" {
+  statement {
+    sid       = "AllowAll"
+    effect    = "Allow"
+    actions   = ["*"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "DenyIamSelfModification"
+    effect = "Deny"
+    actions = [
+      "iam:CreateRole",
+      "iam:DeleteRole",
+      "iam:UpdateAssumeRolePolicy",
+      "iam:PutRolePolicy",
+      "iam:DeleteRolePolicy",
+      "iam:AttachRolePolicy",
+      "iam:DetachRolePolicy",
+      "iam:PutRolePermissionsBoundary",
+      "iam:DeleteRolePermissionsBoundary",
+    ]
+    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/tfe/*"]
+  }
+}
+
+resource "aws_iam_policy" "role_boundary" {
+  name   = "${var.name}-role-boundary"
+  path   = "/tfe/"
+  policy = data.aws_iam_policy_document.role_boundary.json
+}
+
+resource "aws_iam_role" "workspace" {
+  name                 = var.name
+  path                 = "/tfe/"
+  permissions_boundary = aws_iam_policy.role_boundary.arn
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Action    = "sts:AssumeRoleWithWebIdentity"
+        Principal = { Federated = local.tfc_oidc_provider_arn }
+        Condition = {
+          StringEquals = {
+            "app.terraform.io:aud" = "aws.workload.identity"
+          }
+          StringLike = {
+            "app.terraform.io:sub" = "organization:${var.organization}:project:*:workspace:${var.name}:run_phase:*"
+          }
+        }
+      }
+    ]
+  })
 
   tags = {
     source = "tfe"
@@ -107,7 +170,7 @@ data "aws_iam_role" "supplied_application_roles" {
   name = var.application_role_arn_names[count.index]
 }
 
-# We give the IAM user that TFC will use permission to:
+# We give the IAM role that TFC will assume permission to:
 #
 #   * Create resources necessary for the application
 #   * Pass the application role created above / passed to us, to the services using them
@@ -132,10 +195,10 @@ resource "aws_iam_policy" "pass_role" {
   })
 }
 
-resource "aws_iam_user_policy_attachment" "this" {
+resource "aws_iam_role_policy_attachment" "this" {
   count = var.workspace_policy != null ? 1 : 0
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = var.workspace_policy
 }
 
@@ -155,75 +218,71 @@ module "workspace_user_policy" {
   ec2_app       = var.ec2_app
 }
 
-resource "aws_iam_user_policy_attachment" "cdn_policies" {
+resource "aws_iam_role_policy_attachment" "cdn_policies" {
   count = length(module.workspace_user_policy.cdn_type_policy_arns)
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.cdn_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "api_policies" {
+resource "aws_iam_role_policy_attachment" "api_policies" {
   count = length(module.workspace_user_policy.api_type_policy_arns)
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.api_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "lambda_policies" {
+resource "aws_iam_role_policy_attachment" "lambda_policies" {
   count = length(module.workspace_user_policy.lambda_type_policy_arns)
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.lambda_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "container_policies" {
+resource "aws_iam_role_policy_attachment" "container_policies" {
   count = length(module.workspace_user_policy.container_type_policy_arns)
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.container_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "ec2_policies" {
+resource "aws_iam_role_policy_attachment" "ec2_policies" {
   count = length(module.workspace_user_policy.ec2_type_policy_arns)
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.ec2_type_policy_arns[count.index]
 }
 
-resource "aws_iam_user_policy_attachment" "secrets_policy" {
-  user       = aws_iam_user.this.name
+resource "aws_iam_role_policy_attachment" "secrets_policy" {
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.secrets_policy_arn
 }
 
-resource "aws_iam_user_policy_attachment" "ssm_parameters_policy" {
-  user       = aws_iam_user.this.name
+resource "aws_iam_role_policy_attachment" "ssm_parameters_policy" {
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.ssm_parameters_policy_arn
 }
 
-resource "aws_iam_user_policy_attachment" "s3_bucket_policy" {
-  user       = aws_iam_user.this.name
+resource "aws_iam_role_policy_attachment" "s3_bucket_policy" {
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.s3_bucket_policy_arn
 }
 
-resource "aws_iam_user_policy_attachment" "elasticache_policy" {
+resource "aws_iam_role_policy_attachment" "elasticache_policy" {
   count = contains(var.supporting_services, "elasticache") ? 1 : 0
 
-  user       = aws_iam_user.this.name
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.elasticache_policy_arn
 }
 
-resource "aws_iam_user_policy_attachment" "common_policy" {
-  user       = aws_iam_user.this.name
+resource "aws_iam_role_policy_attachment" "common_policy" {
+  role       = aws_iam_role.workspace.name
   policy_arn = module.workspace_user_policy.common_policy_arn
 }
 
-resource "aws_iam_user_policy_attachment" "pass_role" {
-  user       = aws_iam_user.this.name
+resource "aws_iam_role_policy_attachment" "pass_role" {
+  role       = aws_iam_role.workspace.name
   policy_arn = aws_iam_policy.pass_role.arn
-}
-
-resource "aws_iam_access_key" "this" {
-  user = aws_iam_user.this.name
 }
 
 resource "tfe_variable" "aws_region" {
@@ -234,35 +293,18 @@ resource "tfe_variable" "aws_region" {
   workspace_id = var.workspace_id
 }
 
-resource "tfe_variable" "aws_access_key_id" {
-  description  = "Used when accessing AWS for this workspace"
-  key          = "AWS_ACCESS_KEY_ID"
-  value        = aws_iam_access_key.this.id
+resource "tfe_variable" "tfc_aws_provider_auth" {
+  description  = "Enable HCP Terraform dynamic AWS credentials"
+  key          = "TFC_AWS_PROVIDER_AUTH"
+  value        = "true"
   category     = "env"
   workspace_id = var.workspace_id
 }
 
-resource "tfe_variable" "aws_secret_access_key" {
-  description  = "Used when accessing AWS for this workspace"
-  key          = "AWS_SECRET_ACCESS_KEY"
-  value        = aws_iam_access_key.this.secret
+resource "tfe_variable" "tfc_aws_run_role_arn" {
+  description  = "IAM role ARN to assume via OIDC"
+  key          = "TFC_AWS_RUN_ROLE_ARN"
+  value        = aws_iam_role.workspace.arn
   category     = "env"
   workspace_id = var.workspace_id
-  sensitive    = true
-}
-
-locals {
-  access_key = {
-    aws_access_key_id     = aws_iam_access_key.this.id
-    aws_secret_access_key = aws_iam_access_key.this.secret
-  }
-}
-
-resource "aws_secretsmanager_secret" "workspace_access_key" {
-  name = "terraform-cloud/workspace/${aws_iam_user.this.name}/access-key"
-}
-
-resource "aws_secretsmanager_secret_version" "workspace_access_key" {
-  secret_id     = aws_secretsmanager_secret.workspace_access_key.id
-  secret_string = jsonencode(local.access_key)
 }

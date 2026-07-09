@@ -1,3 +1,7 @@
+provider "tfe" {
+  hostname = "app.terraform.io"
+}
+
 resource "aws_iam_role" "tfe_infra_workspaces_test" {
   name        = "tfe-infra-workspaces-test"
   description = "Dummy role used for tfe-infra-workspaces module example"

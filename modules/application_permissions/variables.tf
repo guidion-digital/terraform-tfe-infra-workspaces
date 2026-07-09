@@ -1,5 +1,5 @@
 variable "name" {
-  description = "Will be used for IAM policy, and user"
+  description = "Will be used for IAM policy and role"
 }
 
 variable "application_name" {
@@ -8,7 +8,7 @@ variable "application_name" {
 }
 
 variable "workspace_policy" {
-  description = "Policy to attach to the IAM user created by this module"
+  description = "Policy to attach to the IAM role created by this module"
 }
 
 variable "domain_account_role" {
@@ -111,13 +111,13 @@ variable "application_policy_arns" {
 }
 
 variable "application_role_arn_names" {
-  description = "Ready-made roles to allow the IAM user to pass"
+  description = "Ready-made roles to allow the workspace IAM role to pass"
   type        = list(string)
   default     = []
 }
 
 variable "application_role_arns" {
-  description = "Ready-made roles to allow the IAM user to pass"
+  description = "Ready-made roles to allow the workspace IAM role to pass"
   type        = list(string)
   default     = []
 }
@@ -134,9 +134,14 @@ variable "service_types" {
 }
 
 variable "workspace_id" {
-  description = "Which workspace to put populate"
+  description = "Which workspace to populate"
 }
 
 variable "aws_region" {
-  description = "Region in which the secret can be found"
+  description = "AWS region for the workspace"
+}
+
+variable "organization" {
+  description = "Terraform Cloud organization name used in OIDC trust conditions"
+  type        = string
 }

@@ -2,7 +2,12 @@ output "application_iam_role_arn" {
   value = one(aws_iam_role.application[*].arn)
 }
 
+output "iam_role" {
+  description = "Name of the IAM role that gets created"
+  value       = aws_iam_role.workspace.name
+}
+
 output "iam_user" {
-  description = "Name of the IAM user that gets created"
-  value       = aws_iam_user.this.name
+  description = "Deprecated: use iam_role instead"
+  value       = aws_iam_role.workspace.name
 }

@@ -21,7 +21,7 @@ variable "workspace_execution_mode" {
 }
 
 variable "workspace_policy" {
-  description = "Attached to the created workspace IAM user. Used only for infrastrucutre workspaces"
+  description = "Attached to the created workspace IAM role. Used only for infrastructure workspaces"
   default     = null
   type        = string
 }

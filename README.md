@@ -12,7 +12,7 @@ The purpose of this module is to ensure:
 1. Automation in workspace creation (and deletion!)
 1. Everything is in place for a new application deployment, encouraging procedure enforcement
 
-That last one is encouraged by the automation of AWS credentials and permissions. This means that if an application does not declare it's intentions for AWS — i.e. if we are not told about it — then it simply won't work, since the credentials provided to the workspace will not have permissions to create those undeclared resources.
+That last one is encouraged by the automation of AWS permissions and OIDC-based authentication. This means that if an application does not declare it's intentions for AWS — i.e. if we are not told about it — then it simply won't work, since the role assumed by the workspace will not have permissions to create those undeclared resources.
 
 # Usage
 
