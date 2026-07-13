@@ -137,6 +137,7 @@ module "permissions" {
   aws_region                 = var.aws_region
   workspace_id               = tfe_workspace.this["${var.project}-${var.stage}-${each.key}"].id
   organization               = var.organization
+  use_oidc                   = var.use_oidc
 
   cdn_app = each.value.app_type == "cdn" ? {
     bucket_name = "${var.project}-${var.stage}-${each.key}-origin"
@@ -229,6 +230,7 @@ module "infrastructure_permissions" {
   aws_region       = "eu-central-1"
   workspace_id     = tfe_workspace.this["${var.project}-${var.stage}"].id
   organization     = var.organization
+  use_oidc         = var.use_oidc
 }
 
 # If this is an infra workspace, it will have existing AWS credentials written

@@ -15,6 +15,7 @@ module "workspaces" {
   aws_region       = "eu-central-1"
   workspace_policy = var.workspace_policy
   teams            = var.teams
+  use_oidc         = true
 
   applications = {
     "tfe-infra-workspaces-example" = {
