@@ -1,9 +1,15 @@
 variable "name" {
-  description = "Will be used for IAM policy and role"
+  description = "Will be used for IAM policy and user/role"
 }
 
 variable "workspace_policy" {
-  description = "Policy to attach to the IAM role created by this module"
+  description = "Policy to attach to the IAM user/role created by this module"
+}
+
+variable "use_oidc" {
+  description = "Use OIDC-based AWS auth (role) instead of static IAM user credentials"
+  type        = bool
+  default     = false
 }
 
 variable "workspace_id" {

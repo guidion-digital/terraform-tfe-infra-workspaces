@@ -21,9 +21,15 @@ variable "workspace_execution_mode" {
 }
 
 variable "workspace_policy" {
-  description = "Attached to the created workspace IAM role. Used only for infrastructure workspaces"
+  description = "Attached to the created workspace IAM user/role. Used only for infrastructure workspaces"
   default     = null
   type        = string
+}
+
+variable "use_oidc" {
+  description = "Use OIDC-based AWS auth for Terraform Cloud workspaces instead of IAM user credentials"
+  type        = bool
+  default     = false
 }
 
 variable "workspace_terraform_version" {

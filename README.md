@@ -24,6 +24,11 @@ So called "infrastructure" workspaces are those that later run this module thems
 
 Please see the [Terrappy Permissions](https://github.com/guidion-digital/terrappy/blob/master/permissions.md) page for how permissions for both the workspaces and applications that they deploy, works.
 
+Two AWS access methods for the generated workspace are supported:
+
+- IAM user and credentials: An IAM user is created along with a key which is stored in both an AWS Secrets Manager secret and as secure variables in the Terraform Cloud workspace. This is the default mode
+- OIDC: If you have TFC configured as a trusted provider in the AWS account, simply set `use_oidc` to true and avoid the need for users and credentials. The trust will be based on `var.organization` and the generated workspace name, but not the TFC project
+
 ## Good-to-Knows and Gotchyas
 
 It is _not_ possible to pass a non-pre-existing policy to `application_policy_arns`. If custom policies are needed for the default application role, you can either create a role with them and pass it to `application_role_arn_names`/`application_role_arns`, or pass the policy string to `application_policy`.

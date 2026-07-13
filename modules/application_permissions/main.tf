@@ -104,6 +104,8 @@ locals {
 # policies, and can't create/delete other /tfe/ roles. This keeps the OIDC
 # trust conditions above from being rewritten by a run using this role.
 data "aws_iam_policy_document" "role_boundary" {
+  count = var.use_oidc ? 1 : 0
+
   statement {
     sid       = "AllowAll"
     effect    = "Allow"
@@ -130,15 +132,19 @@ data "aws_iam_policy_document" "role_boundary" {
 }
 
 resource "aws_iam_policy" "role_boundary" {
+  count = var.use_oidc ? 1 : 0
+
   name   = "${var.name}-role-boundary"
   path   = "/tfe/"
-  policy = data.aws_iam_policy_document.role_boundary.json
+  policy = one(data.aws_iam_policy_document.role_boundary[*].json)
 }
 
 resource "aws_iam_role" "workspace" {
+  count = var.use_oidc ? 1 : 0
+
   name                 = var.name
   path                 = "/tfe/"
-  permissions_boundary = aws_iam_policy.role_boundary.arn
+  permissions_boundary = one(aws_iam_policy.role_boundary[*].arn)
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -164,13 +170,24 @@ resource "aws_iam_role" "workspace" {
   }
 }
 
+resource "aws_iam_user" "this" {
+  count = var.use_oidc ? 0 : 1
+
+  name = var.name
+  path = "/tfe/"
+
+  tags = {
+    source = "tfe"
+  }
+}
+
 data "aws_iam_role" "supplied_application_roles" {
   count = length(var.application_role_arn_names)
 
   name = var.application_role_arn_names[count.index]
 }
 
-# We give the IAM role that TFC will assume permission to:
+# We give the workspace principal that TFC will use permission to:
 #
 #   * Create resources necessary for the application
 #   * Pass the application role created above / passed to us, to the services using them
@@ -196,9 +213,16 @@ resource "aws_iam_policy" "pass_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "this" {
-  count = var.workspace_policy != null ? 1 : 0
+  count = var.use_oidc && var.workspace_policy != null ? 1 : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = var.workspace_policy
+}
+
+resource "aws_iam_user_policy_attachment" "this" {
+  count = !var.use_oidc && var.workspace_policy != null ? 1 : 0
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = var.workspace_policy
 }
 
@@ -219,70 +243,163 @@ module "workspace_user_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "cdn_policies" {
-  count = length(module.workspace_user_policy.cdn_type_policy_arns)
+  count = var.use_oidc ? length(module.workspace_user_policy.cdn_type_policy_arns) : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.cdn_type_policy_arns[count.index]
+}
+
+resource "aws_iam_user_policy_attachment" "cdn_policies" {
+  count = var.use_oidc ? 0 : length(module.workspace_user_policy.cdn_type_policy_arns)
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.cdn_type_policy_arns[count.index]
 }
 
 resource "aws_iam_role_policy_attachment" "api_policies" {
-  count = length(module.workspace_user_policy.api_type_policy_arns)
+  count = var.use_oidc ? length(module.workspace_user_policy.api_type_policy_arns) : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.api_type_policy_arns[count.index]
+}
+
+resource "aws_iam_user_policy_attachment" "api_policies" {
+  count = var.use_oidc ? 0 : length(module.workspace_user_policy.api_type_policy_arns)
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.api_type_policy_arns[count.index]
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_policies" {
-  count = length(module.workspace_user_policy.lambda_type_policy_arns)
+  count = var.use_oidc ? length(module.workspace_user_policy.lambda_type_policy_arns) : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.lambda_type_policy_arns[count.index]
+}
+
+resource "aws_iam_user_policy_attachment" "lambda_policies" {
+  count = var.use_oidc ? 0 : length(module.workspace_user_policy.lambda_type_policy_arns)
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.lambda_type_policy_arns[count.index]
 }
 
 resource "aws_iam_role_policy_attachment" "container_policies" {
-  count = length(module.workspace_user_policy.container_type_policy_arns)
+  count = var.use_oidc ? length(module.workspace_user_policy.container_type_policy_arns) : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.container_type_policy_arns[count.index]
+}
+
+resource "aws_iam_user_policy_attachment" "container_policies" {
+  count = var.use_oidc ? 0 : length(module.workspace_user_policy.container_type_policy_arns)
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.container_type_policy_arns[count.index]
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_policies" {
-  count = length(module.workspace_user_policy.ec2_type_policy_arns)
+  count = var.use_oidc ? length(module.workspace_user_policy.ec2_type_policy_arns) : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.ec2_type_policy_arns[count.index]
+}
+
+resource "aws_iam_user_policy_attachment" "ec2_policies" {
+  count = var.use_oidc ? 0 : length(module.workspace_user_policy.ec2_type_policy_arns)
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.ec2_type_policy_arns[count.index]
 }
 
 resource "aws_iam_role_policy_attachment" "secrets_policy" {
-  role       = aws_iam_role.workspace.name
+  count = var.use_oidc ? 1 : 0
+
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.secrets_policy_arn
+}
+
+resource "aws_iam_user_policy_attachment" "secrets_policy" {
+  count = var.use_oidc ? 0 : 1
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.secrets_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_parameters_policy" {
-  role       = aws_iam_role.workspace.name
+  count = var.use_oidc ? 1 : 0
+
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.ssm_parameters_policy_arn
+}
+
+resource "aws_iam_user_policy_attachment" "ssm_parameters_policy" {
+  count = var.use_oidc ? 0 : 1
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.ssm_parameters_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "s3_bucket_policy" {
-  role       = aws_iam_role.workspace.name
+  count = var.use_oidc ? 1 : 0
+
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.s3_bucket_policy_arn
+}
+
+resource "aws_iam_user_policy_attachment" "s3_bucket_policy" {
+  count = var.use_oidc ? 0 : 1
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.s3_bucket_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "elasticache_policy" {
-  count = contains(var.supporting_services, "elasticache") ? 1 : 0
+  count = var.use_oidc && contains(var.supporting_services, "elasticache") ? 1 : 0
 
-  role       = aws_iam_role.workspace.name
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.elasticache_policy_arn
+}
+
+resource "aws_iam_user_policy_attachment" "elasticache_policy" {
+  count = !var.use_oidc && contains(var.supporting_services, "elasticache") ? 1 : 0
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.elasticache_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "common_policy" {
-  role       = aws_iam_role.workspace.name
+  count = var.use_oidc ? 1 : 0
+
+  role       = one(aws_iam_role.workspace[*].name)
+  policy_arn = module.workspace_user_policy.common_policy_arn
+}
+
+resource "aws_iam_user_policy_attachment" "common_policy" {
+  count = var.use_oidc ? 0 : 1
+
+  user       = one(aws_iam_user.this[*].name)
   policy_arn = module.workspace_user_policy.common_policy_arn
 }
 
 resource "aws_iam_role_policy_attachment" "pass_role" {
-  role       = aws_iam_role.workspace.name
+  count = var.use_oidc ? 1 : 0
+
+  role       = one(aws_iam_role.workspace[*].name)
   policy_arn = aws_iam_policy.pass_role.arn
+}
+
+resource "aws_iam_user_policy_attachment" "pass_role" {
+  count = var.use_oidc ? 0 : 1
+
+  user       = one(aws_iam_user.this[*].name)
+  policy_arn = aws_iam_policy.pass_role.arn
+}
+
+resource "aws_iam_access_key" "this" {
+  count = var.use_oidc ? 0 : 1
+
+  user = one(aws_iam_user.this[*].name)
 }
 
 resource "tfe_variable" "aws_region" {
@@ -293,7 +410,50 @@ resource "tfe_variable" "aws_region" {
   workspace_id = var.workspace_id
 }
 
+resource "tfe_variable" "aws_access_key_id" {
+  count = var.use_oidc ? 0 : 1
+
+  description  = "Used when accessing AWS for this workspace"
+  key          = "AWS_ACCESS_KEY_ID"
+  value        = one(aws_iam_access_key.this[*].id)
+  category     = "env"
+  workspace_id = var.workspace_id
+}
+
+resource "tfe_variable" "aws_secret_access_key" {
+  count = var.use_oidc ? 0 : 1
+
+  description  = "Used when accessing AWS for this workspace"
+  key          = "AWS_SECRET_ACCESS_KEY"
+  value        = one(aws_iam_access_key.this[*].secret)
+  category     = "env"
+  workspace_id = var.workspace_id
+  sensitive    = true
+}
+
+locals {
+  access_key = var.use_oidc ? null : {
+    aws_access_key_id     = one(aws_iam_access_key.this[*].id)
+    aws_secret_access_key = one(aws_iam_access_key.this[*].secret)
+  }
+}
+
+resource "aws_secretsmanager_secret" "workspace_access_key" {
+  count = var.use_oidc ? 0 : 1
+
+  name = "terraform-cloud/workspace/${one(aws_iam_user.this[*].name)}/access-key"
+}
+
+resource "aws_secretsmanager_secret_version" "workspace_access_key" {
+  count = var.use_oidc ? 0 : 1
+
+  secret_id     = one(aws_secretsmanager_secret.workspace_access_key[*].id)
+  secret_string = jsonencode(local.access_key)
+}
+
 resource "tfe_variable" "tfc_aws_provider_auth" {
+  count = var.use_oidc ? 1 : 0
+
   description  = "Enable HCP Terraform dynamic AWS credentials"
   key          = "TFC_AWS_PROVIDER_AUTH"
   value        = "true"
@@ -302,9 +462,11 @@ resource "tfe_variable" "tfc_aws_provider_auth" {
 }
 
 resource "tfe_variable" "tfc_aws_run_role_arn" {
+  count = var.use_oidc ? 1 : 0
+
   description  = "IAM role ARN to assume via OIDC"
   key          = "TFC_AWS_RUN_ROLE_ARN"
-  value        = aws_iam_role.workspace.arn
+  value        = one(aws_iam_role.workspace[*].arn)
   category     = "env"
   workspace_id = var.workspace_id
 }
