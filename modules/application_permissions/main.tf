@@ -3,6 +3,9 @@
 locals {
   services                = [for this_service in var.service_types : "${this_service}.amazonaws.com"]
   create_application_role = length(local.services) != 0 && (length(var.application_policy_arns) != 0 || var.application_policy != null)
+  # IAM role names are globally unique per account (path does not scope uniqueness),
+  # so avoid colliding with the workspace role when OIDC is enabled.
+  application_role_name = var.use_oidc ? "${var.name}-app" : var.name
 }
 
 # We create an IAM role here which will be in the allowed list of roles that
@@ -11,7 +14,7 @@ locals {
 resource "aws_iam_role" "application" {
   count = local.create_application_role == true ? 1 : 0
 
-  name = var.name
+  name = local.application_role_name
   path = "/application/"
 
   assume_role_policy = jsonencode({

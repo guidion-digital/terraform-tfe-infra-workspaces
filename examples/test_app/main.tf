@@ -19,7 +19,7 @@ module "workspaces" {
 
   applications = {
     "tfe-infra-workspaces-example" = {
-      "app_type" = "api",
+      # "app_type" = "api",
       # "application_policy"      = data.aws_iam_policy_document.webhooks_backend_default.json
       # "domain_account_role"     = local.guidion_io_role,
       # "github"                  = { repository = "example" },
