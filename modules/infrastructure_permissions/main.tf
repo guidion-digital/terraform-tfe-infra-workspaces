@@ -79,8 +79,9 @@ resource "aws_iam_role" "workspace" {
 resource "aws_iam_user" "this" {
   count = var.use_oidc ? 0 : 1
 
-  name = var.name
-  path = "/tfe/"
+  name          = var.name
+  path          = "/tfe/"
+  force_destroy = true
 
   tags = {
     source = "tfe"
