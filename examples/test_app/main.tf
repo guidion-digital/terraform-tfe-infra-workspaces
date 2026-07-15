@@ -1,4 +1,5 @@
 variable "organization" {}
+# variable "networking_role" {}
 variable "project" {}
 variable "stage" {}
 variable "parent_zone" {}
@@ -7,7 +8,8 @@ variable "remote_state_consumer_names" { default = [] }
 variable "teams" {}
 
 module "workspaces" {
-  source = "../../"
+  source     = "../../"
+  depends_on = [aws_iam_role.tfe_infra_workspaces_test]
 
   organization     = var.organization
   project          = var.project
@@ -37,9 +39,9 @@ module "workspaces" {
         "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
       ],
 
-      # "application_role_arn_names" = [
-      #   aws_iam_role.tfe_infra_workspaces_test.name,
-      # ],
+      "application_role_arn_names" = [
+        aws_iam_role.tfe_infra_workspaces_test.name,
+      ],
 
       "application_role_arns" = [
         aws_iam_role.tfe_infra_workspaces_test.arn,
