@@ -1,5 +1,5 @@
 variable "organization" {}
-# variable "networking_role" {}
+variable "networking_role" {}
 variable "project" {}
 variable "stage" {}
 variable "parent_zone" {}
@@ -21,9 +21,9 @@ module "workspaces" {
 
   applications = {
     "tfe-infra-workspaces-example" = {
-      # "app_type" = "api",
+      "app_type"          = "api",
+      domain_account_role = var.networking_role,
       # "application_policy"      = data.aws_iam_policy_document.webhooks_backend_default.json
-      # "domain_account_role"     = local.guidion_io_role,
       # "github"                  = { repository = "example" },
 
       "service_types" = [
