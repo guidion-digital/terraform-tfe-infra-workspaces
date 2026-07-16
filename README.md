@@ -12,7 +12,7 @@ The purpose of this module is to ensure:
 1. Automation in workspace creation (and deletion!)
 1. Everything is in place for a new application deployment, encouraging procedure enforcement
 
-That last one is encouraged by the automation of AWS credentials and permissions. This means that if an application does not declare it's intentions for AWS — i.e. if we are not told about it — then it simply won't work, since the credentials provided to the workspace will not have permissions to create those undeclared resources.
+That last one is encouraged by the automation of AWS permissions and OIDC-based authentication. This means that if an application does not declare it's intentions for AWS — i.e. if we are not told about it — then it simply won't work, since the role assumed by the workspace will not have permissions to create those undeclared resources.
 
 # Usage
 
@@ -23,6 +23,11 @@ So called "infrastructure" workspaces are those that later run this module thems
 # Permissions
 
 Please see the [Terrappy Permissions](https://github.com/guidion-digital/terrappy/blob/master/permissions.md) page for how permissions for both the workspaces and applications that they deploy, works.
+
+Two AWS access methods for the generated workspace are supported:
+
+- IAM user and credentials: An IAM user is created along with a key which is stored in both an AWS Secrets Manager secret and as secure variables in the Terraform Cloud workspace. This is the default mode
+- OIDC: If you have TFC configured as a trusted provider in the AWS account, simply set `use_oidc` to true and avoid the need for users and credentials. The trust will be based on `var.organization` and the generated workspace name, but not the TFC project
 
 ## Good-to-Knows and Gotchyas
 

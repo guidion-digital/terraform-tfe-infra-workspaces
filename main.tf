@@ -136,6 +136,8 @@ module "permissions" {
   project                    = var.project
   aws_region                 = var.aws_region
   workspace_id               = tfe_workspace.this["${var.project}-${var.stage}-${each.key}"].id
+  organization               = var.organization
+  use_oidc                   = var.use_oidc
 
   cdn_app = each.value.app_type == "cdn" ? {
     bucket_name = "${var.project}-${var.stage}-${each.key}-origin"
@@ -211,13 +213,13 @@ module "permissions" {
   } : null
 }
 
-# If this is an infrastructure workspace and there's no existing IAM user, get
-# the workspace_policy from var.workspace_policy, create a user, and attach it
-# var.workspace_policy
+# If this is an infrastructure workspace and there's no existing IAM user,
+# create an IAM role that the workspace can assume via OIDC and attach
+# var.workspace_policy.
 #
 # N.B. As well as the internal logic in locals for working out if we're creating
 # an infrastructure workspace being true, var.workspace_policy must also be given
-# in order for an IAM policy to be created
+# in order for an IAM policy to be attached
 module "infrastructure_permissions" {
   for_each = var.workspace_policy != null ? local.infrastructure_workspaces : {}
   # for_each = { "foo" = "bar" }
@@ -227,15 +229,16 @@ module "infrastructure_permissions" {
   workspace_policy = var.workspace_policy
   aws_region       = "eu-central-1"
   workspace_id     = tfe_workspace.this["${var.project}-${var.stage}"].id
+  organization     = var.organization
+  use_oidc         = var.use_oidc
 }
 
-# If this is an infra workspace, it will have existing AWS credentials created
-# for consumption written in the Secrets Manager. Pick those up and set them
-# for the workspace to use. Credentials are otherwise created and set in
-# module.infrastructure_permissions above
+# If this is an infra workspace, it will have existing AWS credentials written
+# in Secrets Manager. Pick those up and set them for the workspace to use.
+# Otherwise, module.infrastructure_permissions configures OIDC-based role auth.
 module "aws_secrets" {
   source = "./modules/aws_secrets_population"
-  # If we're not given a policy, then create an IAM user
+  # If we're not given a policy, populate static credentials from Secrets Manager
   for_each = var.workspace_policy == null ? local.infrastructure_workspaces : {}
 
   aws_region   = "eu-central-1"

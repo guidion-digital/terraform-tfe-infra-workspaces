@@ -8,7 +8,8 @@ variable "remote_state_consumer_names" { default = [] }
 variable "teams" {}
 
 module "workspaces" {
-  source = "../../"
+  source     = "../../"
+  depends_on = [aws_iam_role.tfe_infra_workspaces_test]
 
   organization     = var.organization
   project          = var.project
@@ -16,12 +17,13 @@ module "workspaces" {
   aws_region       = "eu-central-1"
   workspace_policy = var.workspace_policy
   teams            = var.teams
+  use_oidc         = true
 
   applications = {
     "tfe-infra-workspaces-example" = {
-      "app_type" = "api",
+      "app_type"          = "api",
+      domain_account_role = var.networking_role,
       # "application_policy"      = data.aws_iam_policy_document.webhooks_backend_default.json
-      # "domain_account_role"     = local.guidion_io_role,
       # "github"                  = { repository = "example" },
 
       "service_types" = [
