@@ -79,8 +79,9 @@ resource "aws_iam_role" "workspace" {
 resource "aws_iam_user" "this" {
   count = var.use_oidc ? 0 : 1
 
-  name = var.name
-  path = "/tfe/"
+  name          = var.name
+  path          = "/tfe/"
+  force_destroy = true
 
   tags = {
     source = "tfe"
@@ -97,14 +98,18 @@ resource "aws_iam_role_policy_attachment" "this" {
 resource "aws_iam_user_policy_attachment" "this" {
   count = !var.use_oidc && var.workspace_policy != null ? 1 : 0
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = var.workspace_policy
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_access_key" "this" {
   count = var.use_oidc ? 0 : 1
 
-  user = one(aws_iam_user.this[*].name)
+  user = var.name
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "tfe_variable" "aws_region" {
@@ -146,7 +151,9 @@ locals {
 resource "aws_secretsmanager_secret" "workspace_access_key" {
   count = var.use_oidc ? 0 : 1
 
-  name = "terraform-cloud/workspace/${one(aws_iam_user.this[*].name)}/access-key"
+  name = "terraform-cloud/workspace/${var.name}/access-key"
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_secretsmanager_secret_version" "workspace_access_key" {

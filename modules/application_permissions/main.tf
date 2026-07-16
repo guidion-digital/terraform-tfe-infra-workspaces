@@ -149,6 +149,11 @@ resource "aws_iam_role" "workspace" {
   path                 = "/tfe/"
   permissions_boundary = one(aws_iam_policy.role_boundary[*].arn)
 
+  # On upgrades from IAM-user auth to OIDC, the legacy application role may
+  # still exist with the same name as this workspace role. Waiting for the
+  # application role replacement avoids CreateRole EntityAlreadyExists races.
+  depends_on = [aws_iam_role.application]
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -176,8 +181,9 @@ resource "aws_iam_role" "workspace" {
 resource "aws_iam_user" "this" {
   count = var.use_oidc ? 0 : 1
 
-  name = var.name
-  path = "/tfe/"
+  name          = var.name
+  path          = "/tfe/"
+  force_destroy = true
 
   tags = {
     source = "tfe"
@@ -225,8 +231,10 @@ resource "aws_iam_role_policy_attachment" "this" {
 resource "aws_iam_user_policy_attachment" "this" {
   count = !var.use_oidc && var.workspace_policy != null ? 1 : 0
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = var.workspace_policy
+
+  depends_on = [aws_iam_user.this]
 }
 
 module "workspace_user_policy" {
@@ -255,8 +263,10 @@ resource "aws_iam_role_policy_attachment" "cdn_policies" {
 resource "aws_iam_user_policy_attachment" "cdn_policies" {
   count = var.use_oidc ? 0 : length(module.workspace_user_policy.cdn_type_policy_arns)
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.cdn_type_policy_arns[count.index]
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "api_policies" {
@@ -269,8 +279,10 @@ resource "aws_iam_role_policy_attachment" "api_policies" {
 resource "aws_iam_user_policy_attachment" "api_policies" {
   count = var.use_oidc ? 0 : length(module.workspace_user_policy.api_type_policy_arns)
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.api_type_policy_arns[count.index]
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_policies" {
@@ -283,8 +295,10 @@ resource "aws_iam_role_policy_attachment" "lambda_policies" {
 resource "aws_iam_user_policy_attachment" "lambda_policies" {
   count = var.use_oidc ? 0 : length(module.workspace_user_policy.lambda_type_policy_arns)
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.lambda_type_policy_arns[count.index]
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "container_policies" {
@@ -297,8 +311,10 @@ resource "aws_iam_role_policy_attachment" "container_policies" {
 resource "aws_iam_user_policy_attachment" "container_policies" {
   count = var.use_oidc ? 0 : length(module.workspace_user_policy.container_type_policy_arns)
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.container_type_policy_arns[count.index]
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_policies" {
@@ -311,8 +327,10 @@ resource "aws_iam_role_policy_attachment" "ec2_policies" {
 resource "aws_iam_user_policy_attachment" "ec2_policies" {
   count = var.use_oidc ? 0 : length(module.workspace_user_policy.ec2_type_policy_arns)
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.ec2_type_policy_arns[count.index]
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "secrets_policy" {
@@ -325,8 +343,10 @@ resource "aws_iam_role_policy_attachment" "secrets_policy" {
 resource "aws_iam_user_policy_attachment" "secrets_policy" {
   count = var.use_oidc ? 0 : 1
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.secrets_policy_arn
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_parameters_policy" {
@@ -339,8 +359,10 @@ resource "aws_iam_role_policy_attachment" "ssm_parameters_policy" {
 resource "aws_iam_user_policy_attachment" "ssm_parameters_policy" {
   count = var.use_oidc ? 0 : 1
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.ssm_parameters_policy_arn
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "s3_bucket_policy" {
@@ -353,8 +375,10 @@ resource "aws_iam_role_policy_attachment" "s3_bucket_policy" {
 resource "aws_iam_user_policy_attachment" "s3_bucket_policy" {
   count = var.use_oidc ? 0 : 1
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.s3_bucket_policy_arn
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "elasticache_policy" {
@@ -367,8 +391,10 @@ resource "aws_iam_role_policy_attachment" "elasticache_policy" {
 resource "aws_iam_user_policy_attachment" "elasticache_policy" {
   count = !var.use_oidc && contains(var.supporting_services, "elasticache") ? 1 : 0
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.elasticache_policy_arn
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "common_policy" {
@@ -381,8 +407,10 @@ resource "aws_iam_role_policy_attachment" "common_policy" {
 resource "aws_iam_user_policy_attachment" "common_policy" {
   count = var.use_oidc ? 0 : 1
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = module.workspace_user_policy.common_policy_arn
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_role_policy_attachment" "pass_role" {
@@ -395,14 +423,18 @@ resource "aws_iam_role_policy_attachment" "pass_role" {
 resource "aws_iam_user_policy_attachment" "pass_role" {
   count = var.use_oidc ? 0 : 1
 
-  user       = one(aws_iam_user.this[*].name)
+  user       = var.name
   policy_arn = aws_iam_policy.pass_role.arn
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_iam_access_key" "this" {
   count = var.use_oidc ? 0 : 1
 
-  user = one(aws_iam_user.this[*].name)
+  user = var.name
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "tfe_variable" "aws_region" {
@@ -444,7 +476,9 @@ locals {
 resource "aws_secretsmanager_secret" "workspace_access_key" {
   count = var.use_oidc ? 0 : 1
 
-  name = "terraform-cloud/workspace/${one(aws_iam_user.this[*].name)}/access-key"
+  name = "terraform-cloud/workspace/${var.name}/access-key"
+
+  depends_on = [aws_iam_user.this]
 }
 
 resource "aws_secretsmanager_secret_version" "workspace_access_key" {
