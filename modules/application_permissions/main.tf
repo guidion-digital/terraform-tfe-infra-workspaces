@@ -3,9 +3,9 @@
 locals {
   services                = [for this_service in var.service_types : "${this_service}.amazonaws.com"]
   create_application_role = length(local.services) != 0 && (length(var.application_policy_arns) != 0 || var.application_policy != null)
-  # IAM role names are globally unique per account (path does not scope uniqueness),
-  # so avoid colliding with the workspace role when OIDC is enabled.
-  application_role_name = var.use_oidc ? "${var.name}-app" : var.name
+  # Keep runtime/service role names stable and avoid OIDC workspace-role collisions.
+  application_role_name = var.name
+  workspace_role_name   = "${var.name}-workspace"
 }
 
 # We create an IAM role here which will be in the allowed list of roles that
@@ -16,6 +16,10 @@ resource "aws_iam_role" "application" {
 
   name = local.application_role_name
   path = "/application/"
+
+  # During migration from workspace-role name "var.name" to "var.name-workspace",
+  # wait until workspace role replacement completes before re-using "var.name".
+  depends_on = [aws_iam_role.workspace]
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -145,14 +149,9 @@ resource "aws_iam_policy" "role_boundary" {
 resource "aws_iam_role" "workspace" {
   count = var.use_oidc ? 1 : 0
 
-  name                 = var.name
+  name                 = local.workspace_role_name
   path                 = "/tfe/"
   permissions_boundary = one(aws_iam_policy.role_boundary[*].arn)
-
-  # On upgrades from IAM-user auth to OIDC, the legacy application role may
-  # still exist with the same name as this workspace role. Waiting for the
-  # application role replacement avoids CreateRole EntityAlreadyExists races.
-  depends_on = [aws_iam_role.application]
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
