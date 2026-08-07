@@ -27,7 +27,7 @@ variable "workspace_policy" {
 }
 
 variable "use_oidc" {
-  description = "Use OIDC-based AWS auth for Terraform Cloud workspaces instead of IAM user credentials"
+  description = "Work In Progress: Has not been 100% tested yet. Use OIDC-based AWS auth for Terraform Cloud workspaces instead of IAM user credentials"
   type        = bool
   default     = false
 }

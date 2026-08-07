@@ -2,6 +2,7 @@ data "aws_caller_identity" "current" {}
 
 locals {
   tfc_oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/app.terraform.io"
+  workspace_role_name   = "${var.name}-workspace"
 }
 
 # Bounds what var.workspace_policy (opaque/caller-supplied) is allowed to grant.
@@ -48,7 +49,7 @@ resource "aws_iam_policy" "role_boundary" {
 resource "aws_iam_role" "workspace" {
   count = var.use_oidc ? 1 : 0
 
-  name                 = var.name
+  name                 = local.workspace_role_name
   path                 = "/tfe/"
   permissions_boundary = one(aws_iam_policy.role_boundary[*].arn)
 
