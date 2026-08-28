@@ -71,11 +71,13 @@ variable "container_app" {
   description = "Values used when creating IAM resources for a container (ECS) application"
 
   type = object({
-    targetgroup_arn           = string,
-    loadbalancers             = list(string),
-    loadbalancer_listener_arn = string,
-    ecs_cluster_arn           = string,
-    ecs_service_arn           = string
+    targetgroup_arn                 = string,
+    loadbalancers                   = list(string),
+    loadbalancer_listener_arn       = string,
+    ecs_cluster_arn                 = string,
+    ecs_service_arn                 = string,
+    ecs_event_capture_rule_arn      = string,
+    ecs_event_capture_log_group_arn = string
   })
 
   default = null

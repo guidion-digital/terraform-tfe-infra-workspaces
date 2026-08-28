@@ -36,3 +36,9 @@ It is _not_ possible to pass a non-pre-existing policy to `application_policy_ar
 The role that applications are permitted to assume include policies granting access to additional AWS resources such as DynamoDB, if listed in `var.applications{}.supporting_services`. Permissions restrict resources by the application's name as a namespace. E.g. an application called `app-x` will be permitted read/write to tables named `arn:aws:dynamodb:*:*:table/app-x-*`
 
 When supplying the `var.applications{}.github` object, ensure that the token being used in your Github provider definition has access to the repository referenced.
+
+For container applications, the workspace permission handoff forwards the ECS
+cluster ARN and the application-name-based ECS event-capture EventBridge rule
+and CloudWatch Logs ARNs to the workspace-policy helper. These ARNs scope the
+Terraform runner permissions; they are separate from the `/application/` ECS
+runtime role.
