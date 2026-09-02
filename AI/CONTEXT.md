@@ -3,8 +3,8 @@ repo: guidion-digital/terraform-tfe-infra-workspaces
 project_name: "Terraform TFE Infrastructure Workspaces"
 owner: UNSET — please set this
 domain: "Terraform Enterprise infrastructure workspace provisioning and access control"
-criticality: "UNSET"
-summary: "Terraform configuration for provisioning and managing Terraform Enterprise infrastructure workspaces, application and infrastructure permissions, team access, variables, and AWS secret population."
+criticality: "Cinfra"
+summary: "Terraform module for provisioning and managing Terraform Enterprise infrastructure workspaces, application and infrastructure permissions, team access, variables, and AWS secret population."
 main_stack:
   - "Terraform"
   - "Terraform Enterprise"
@@ -18,12 +18,12 @@ main_systems:
 last_reviewed: 2026-09-02
 review_confidence: "medium"
 generated_by: "AI assistant"
-validated_by: "UNSET"
+validated_by: "Afraz"
 ---
 
 ## Overview
 
-This repository contains Terraform configuration and reusable modules for managing Terraform Enterprise infrastructure workspaces and their supporting permissions, access, variables, and secrets.
+This repository is a Terraform module which uses in part other reusable modules for managing Terraform Enterprise infrastructure workspaces and their supporting permissions, access, variables, and secrets.
 
 The root module is defined by `main.tf`, `variables.tf`, `outputs.tf`, and `versions.tf`. An example configuration is available under `examples/test_app`.
 
