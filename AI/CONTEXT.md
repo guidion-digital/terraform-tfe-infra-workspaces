@@ -1,7 +1,7 @@
 ---
 repo: guidion-digital/terraform-tfe-infra-workspaces
 project_name: "Terraform TFE Infrastructure Workspaces"
-owner: UNSET — please set this
+owner: Cinfra
 domain: "Terraform Enterprise infrastructure workspace provisioning and access control"
 criticality: "Cinfra"
 summary: "Terraform module for provisioning and managing Terraform Enterprise infrastructure workspaces, application and infrastructure permissions, team access, variables, and AWS secret population."
