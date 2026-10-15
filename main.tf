@@ -197,8 +197,12 @@ module "permissions" {
     ecs_service_arn                 = "arn:aws:ecs:eu-central-1:${data.aws_caller_identity.current.account_id}:service/*/${each.key}-service"
     ecs_event_capture_rule_arn      = "arn:aws:events:${var.aws_region}:${data.aws_caller_identity.current.account_id}:rule/ecs-event-capture-${each.key}",
     ecs_event_capture_log_group_arn = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/events/ecs/containerinsights/${each.key}/performance",
+    alb_loadbalancer_arn            = "arn:aws:elasticloadbalancing:${var.aws_region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${each.key}-alb/*",
+    alb_targetgroup_arn             = "arn:aws:elasticloadbalancing:${var.aws_region}:${data.aws_caller_identity.current.account_id}:targetgroup/${each.key}-http/*",
+    alb_listener_arn                = "arn:aws:elasticloadbalancing:${var.aws_region}:${data.aws_caller_identity.current.account_id}:listener/app/${each.key}-alb/*/*",
     loadbalancers = [
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${each.key}/*",
+      "arn:aws:elasticloadbalancing:${var.aws_region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${each.key}-alb/*",
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/${each.key}",
       "arn:aws:elasticloadbalancing:eu-central-1:${data.aws_caller_identity.current.account_id}:loadbalancer/net/${each.key}/*"
     ],

@@ -77,7 +77,10 @@ variable "container_app" {
     ecs_cluster_arn                 = string,
     ecs_service_arn                 = string,
     ecs_event_capture_rule_arn      = string,
-    ecs_event_capture_log_group_arn = string
+    ecs_event_capture_log_group_arn = string,
+    alb_loadbalancer_arn            = optional(string, null),
+    alb_targetgroup_arn             = optional(string, null),
+    alb_listener_arn                = optional(string, null)
   })
 
   default = null

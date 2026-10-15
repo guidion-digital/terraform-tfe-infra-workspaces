@@ -42,3 +42,6 @@ cluster ARN and the application-name-based ECS event-capture EventBridge rule
 and CloudWatch Logs ARNs to the workspace-policy helper. These ARNs scope the
 Terraform runner permissions; they are separate from the `/application/` ECS
 runtime role.
+The handoff also includes the internal ALB's `${application_name}-alb` load
+balancer, `${application_name}-http` target group, and ALB listener ARNs so the
+runner can create and tag those resources.
